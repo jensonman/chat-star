@@ -1,0 +1,13 @@
+version: '3'
+services:
+  nestjs:
+    image: 'my-nestjs-app'
+    ports:
+      - 3000:3000
+  database:
+    image: mongo
+    container_name: my_mongodb
+    volumes:
+      - ../database/data:/data/data
+    ports:
+      - '27017:27017'
