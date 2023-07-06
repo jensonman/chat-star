@@ -4,10 +4,20 @@ services:
     image: 'my-nestjs-app'
     ports:
       - 3000:3000
+    depends_on:
+      - database
+    networks:
+      - mynetwork
   database:
     image: mongo
     container_name: my_mongodb
     volumes:
-      - ../database/data:/data/data
+      - ../database/data:/data/db
     ports:
       - '27017:27017'
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
+    driver: bridge
