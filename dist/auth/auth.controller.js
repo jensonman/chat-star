@@ -17,9 +17,14 @@ const common_1 = require("@nestjs/common");
 const auth_service_1 = require("./auth.service");
 const create_user_dto_1 = require("./dto/create-user.dto");
 const login_user_dto_1 = require("./dto/login-user.dto");
+const verification_code_service_1 = require("./verification-code.service");
 let AuthController = exports.AuthController = class AuthController {
-    constructor(authService) {
+    constructor(authService, verificationCodeService) {
         this.authService = authService;
+        this.verificationCodeService = verificationCodeService;
+    }
+    async verificationCode(createUserDto) {
+        return this.verificationCodeService.generateVerificationCode(createUserDto.email);
     }
     async register(createUserDto) {
         return this.authService.register(createUserDto);
@@ -28,6 +33,13 @@ let AuthController = exports.AuthController = class AuthController {
         return this.authService.login(loginDto);
     }
 };
+__decorate([
+    (0, common_1.Post)('verification-code'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [create_user_dto_1.CreateUserDto]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "verificationCode", null);
 __decorate([
     (0, common_1.Post)('register'),
     __param(0, (0, common_1.Body)()),
@@ -44,6 +56,7 @@ __decorate([
 ], AuthController.prototype, "login", null);
 exports.AuthController = AuthController = __decorate([
     (0, common_1.Controller)('auth'),
-    __metadata("design:paramtypes", [auth_service_1.AuthService])
+    __metadata("design:paramtypes", [auth_service_1.AuthService,
+        verification_code_service_1.VerificationCodeService])
 ], AuthController);
 //# sourceMappingURL=auth.controller.js.map

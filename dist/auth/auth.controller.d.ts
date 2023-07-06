@@ -26,9 +26,12 @@
 import { AuthService } from './auth.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginDto } from './dto/login-user.dto';
+import { VerificationCodeService } from './verification-code.service';
 export declare class AuthController {
     private readonly authService;
-    constructor(authService: AuthService);
+    private readonly verificationCodeService;
+    constructor(authService: AuthService, verificationCodeService: VerificationCodeService);
+    verificationCode(createUserDto: CreateUserDto): Promise<string>;
     register(createUserDto: CreateUserDto): Promise<import("./auth.schema").User & {
         _id: import("mongoose").Types.ObjectId;
     }>;

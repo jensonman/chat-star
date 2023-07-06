@@ -4,10 +4,13 @@ import { LoginDto } from './dto/login-user.dto';
 import { User } from './auth.schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
+// import { MailService } from './mail.service';
 import * as bcryptjs from 'bcryptjs'
 @Injectable()
 export class AuthService {
-    constructor(@InjectModel(User.name) private readonly userModel: Model<User>){}
+    constructor(
+      @InjectModel(User.name) private readonly userModel: Model<User>,
+    ){}
     async register(createUserDto: CreateUserDto) {
         // 在这里实现用户注册逻辑，例如创建用户并保存到数据库
         const {email, password} = createUserDto
