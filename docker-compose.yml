@@ -17,6 +17,17 @@ services:
       - '27017:27017'
     networks:
       - mynetwork
+  redis:
+    image: redis  #镜像名称
+    container_name: redis #容器名称
+    restart: always  #重启docker引擎后该容器也重启
+    ports:
+      - 6379:6379 #本地端口号与容器内部端口号
+    volumes: #指定挂载目录
+      - ../redis/redis.conf:/etc/redis/redis.conf:rw  #redis.conf文件和data目录分别映射了主机的redis.conf文件和主机的data目录
+      - ../redis/data:/data:rw
+    command:
+      /bin/bash -c "redis-server /etc/redis/redis.conf --appendonly yes" #使用command可以覆盖容器启动后默认执行的命令。这里启动执行指定的redis.conf文件
 
 networks:
   mynetwork:

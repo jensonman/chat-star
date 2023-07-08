@@ -31,7 +31,7 @@ export declare class AuthController {
     private readonly authService;
     private readonly verificationCodeService;
     constructor(authService: AuthService, verificationCodeService: VerificationCodeService);
-    verificationCode(createUserDto: CreateUserDto): Promise<string>;
+    verificationCode(createUserDto: CreateUserDto): Promise<any>;
     register(createUserDto: CreateUserDto): Promise<import("./auth.schema").User & {
         _id: import("mongoose").Types.ObjectId;
     }>;

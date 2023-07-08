@@ -24,6 +24,9 @@ let AuthController = exports.AuthController = class AuthController {
         this.verificationCodeService = verificationCodeService;
     }
     async verificationCode(createUserDto) {
+        if (createUserDto.code) {
+            return this.verificationCodeService.verified(createUserDto);
+        }
         return this.verificationCodeService.generateVerificationCode(createUserDto.email);
     }
     async register(createUserDto) {

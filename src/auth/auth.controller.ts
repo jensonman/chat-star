@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, Query } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginDto } from './dto/login-user.dto';
@@ -13,6 +13,9 @@ export class AuthController {
 
   @Post('verification-code')
   async verificationCode(@Body() createUserDto: CreateUserDto) {
+    if(createUserDto.code) {
+      return this.verificationCodeService.verified(createUserDto)
+    }
     return this.verificationCodeService.generateVerificationCode(createUserDto.email);
   }
   @Post('register')
