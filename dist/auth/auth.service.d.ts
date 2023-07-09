@@ -32,7 +32,11 @@ export declare class AuthService {
     register(createUserDto: CreateUserDto): Promise<User & {
         _id: import("mongoose").Types.ObjectId;
     }>;
-    login(loginDto: LoginDto): Promise<User & {
-        _id: import("mongoose").Types.ObjectId;
+    login(loginDto: LoginDto): Promise<{
+        code: number;
+        success: boolean;
+        data: {
+            message: string;
+        };
     }>;
 }

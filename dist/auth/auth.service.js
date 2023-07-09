@@ -36,15 +36,32 @@ let AuthService = exports.AuthService = class AuthService {
     }
     async login(loginDto) {
         const { email, password } = loginDto;
+        const res = {
+            code: 999,
+            success: false,
+            data: {
+                message: ''
+            }
+        };
+        console.log("---loginDto:", loginDto);
         const user = await this.userModel.findOne({ email });
         if (!user) {
-            throw new Error('用户不存在');
+            res.data.message = '用户不存在';
+            return res;
         }
         const isPasswordMatch = await bcryptjs.compareSync(password, user.password);
         if (!isPasswordMatch) {
-            throw new Error('密码不正确');
+            res.data.message = '密码不正确';
+            return res;
         }
-        return user;
+        Object.assign(res, {
+            code: 200,
+            success: true,
+            data: {
+                user
+            }
+        });
+        return res;
     }
 };
 exports.AuthService = AuthService = __decorate([

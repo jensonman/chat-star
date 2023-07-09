@@ -35,7 +35,11 @@ export declare class AuthController {
     register(createUserDto: CreateUserDto): Promise<import("./auth.schema").User & {
         _id: import("mongoose").Types.ObjectId;
     }>;
-    login(loginDto: LoginDto): Promise<import("./auth.schema").User & {
-        _id: import("mongoose").Types.ObjectId;
+    login(loginDto: LoginDto): Promise<{
+        code: number;
+        success: boolean;
+        data: {
+            message: string;
+        };
     }>;
 }
