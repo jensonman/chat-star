@@ -30,7 +30,8 @@ let AuthController = exports.AuthController = class AuthController {
         return this.verificationCodeService.generateVerificationCode(createUserDto.email);
     }
     async register(createUserDto) {
-        return this.authService.register(createUserDto);
+        let user = await this.authService.register(createUserDto);
+        return user;
     }
     async login(loginDto) {
         return this.authService.login(loginDto);

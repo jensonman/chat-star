@@ -5,21 +5,54 @@ import { User } from './auth.schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { JwtService } from '@nestjs/jwt';
+import { RedisService } from './redis.service';
+import { promisify } from 'util';
 // import { MailService } from './mail.service';
 import * as bcryptjs from 'bcryptjs'
+import { VerificationCodeService } from './verification-code.service';
+
 @Injectable()
 export class AuthService {
     constructor(
       private jwtService: JwtService,
+      private readonly redisService: RedisService,
+      private readonly verificationCodeService: VerificationCodeService, 
       @InjectModel(User.name) private readonly userModel: Model<User>,
     ){}
     async register(createUserDto: CreateUserDto) {
         // 在这里实现用户注册逻辑，例如创建用户并保存到数据库
-        const {email, password} = createUserDto
+        const {email, password, code} = createUserDto
         
         const existingUser = await this.userModel.findOne({ email });
+        // 验证邮箱
         if (existingUser) {
-          throw new Error('该邮箱已被注册');
+          return {
+            success: false,
+            data: {
+              message: "该邮箱已注册！"
+            }
+          }
+          // throw new Error('该邮箱已被注册');
+        }
+        // 检查验证码
+        if(code) {
+          let getCode = await this.redisService.get(email)
+          if (code !== JSON.parse(getCode).verificationCode) {
+            return {
+              success: false,
+              data: {
+                message: "请输入正确的验证码！"
+              }
+            }
+          }
+
+        }else {
+          return {
+            success: false,
+            data: {
+              message: "请输入正确的验证码！"
+            }
+          }
         }
     
         const saltRounds = 10;
@@ -27,7 +60,12 @@ export class AuthService {
 
         const newUser = new this.userModel({ email, password: hashedPassword });
         await newUser.save();
-        return newUser;
+        return {
+          data:{
+            message: "message: 注册成功"
+          },
+          success: true
+        };
     }
 
     async login(loginDto: LoginDto) {

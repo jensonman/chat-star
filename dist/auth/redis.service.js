@@ -2,10 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RedisService = void 0;
 const redis_1 = require("redis");
+require('dotenv').config();
 class RedisService {
     constructor() {
         this.client = (0, redis_1.createClient)({
-            url: 'redis://192.168.1.112:6379'
+            url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`
         });
         this.client.on('ready', () => {
             console.log('isReady:', this.client.isReady);

@@ -19,7 +19,12 @@ export class AuthController {
   }
   @Post('register')
   async register(@Body() createUserDto: CreateUserDto) {
-    return this.authService.register(createUserDto);
+
+    let user = await this.authService.register(createUserDto);
+    // if (user.success) {
+      
+    // }
+    return user
   }
   @Post('login')
   async login(@Body() loginDto: LoginDto) {

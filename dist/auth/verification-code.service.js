@@ -8,14 +8,21 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.VerificationCodeService = void 0;
 const common_1 = require("@nestjs/common");
 const nodemailer_1 = require("nodemailer");
 const redis_service_1 = require("./redis.service");
+const auth_schema_1 = require("./auth.schema");
+const mongoose_1 = require("mongoose");
+const mongoose_2 = require("@nestjs/mongoose");
 let VerificationCodeService = exports.VerificationCodeService = class VerificationCodeService {
-    constructor(redisService) {
+    constructor(redisService, userModel) {
         this.redisService = redisService;
+        this.userModel = userModel;
         this.transporter = (0, nodemailer_1.createTransport)({
             host: 'smtp.163.com',
             port: 465,
@@ -34,14 +41,33 @@ let VerificationCodeService = exports.VerificationCodeService = class Verificati
             verificationCode,
             lastRegistrationRequest: Date.now()
         };
+        const existingUser = await this.userModel.find({ "email": toEmail });
+        if (existingUser.length !== 0) {
+            return {
+                success: false,
+                data: {
+                    message: "该邮箱已注册！"
+                }
+            };
+        }
         try {
             await this.sendVerificationEmail(toEmail, "主题：验证码", verificationCode);
             await this.redisService.set(toEmail, JSON.stringify(verificationData));
         }
         catch (error) {
-            return '验证码发送失败，请重新发送';
+            return {
+                success: false,
+                data: {
+                    message: "验证码发送失败，请重新发送"
+                }
+            };
         }
-        return '验证码已发送，请查收邮件。';
+        return {
+            success: true,
+            data: {
+                message: "验证码已发送到该邮箱，请查收"
+            }
+        };
     }
     async sendVerificationEmail(to, subject, verificationCode) {
         this.transporter.verify(function (error, success) {
@@ -94,6 +120,8 @@ let VerificationCodeService = exports.VerificationCodeService = class Verificati
 };
 exports.VerificationCodeService = VerificationCodeService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [redis_service_1.RedisService])
+    __param(1, (0, mongoose_2.InjectModel)(auth_schema_1.User.name)),
+    __metadata("design:paramtypes", [redis_service_1.RedisService,
+        mongoose_1.Model])
 ], VerificationCodeService);
 //# sourceMappingURL=verification-code.service.js.map

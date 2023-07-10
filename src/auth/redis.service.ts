@@ -1,12 +1,13 @@
 import {RedisClientType, createClient} from 'redis'
 import { promisify } from 'util';
+require('dotenv').config();
 
 export class RedisService {
    readonly client: RedisClientType
 
   constructor(){
     this.client = createClient({
-        url: 'redis://192.168.1.112:6379'
+        url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`
     });
 
     this.client.on('ready', () => {
@@ -23,6 +24,7 @@ export class RedisService {
 
   async get(key: string): Promise<string | null>{
     return await this.client.get(key)
+     
   }
 
   async set(key: string, value: string): Promise<void>{

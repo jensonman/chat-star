@@ -4,11 +4,18 @@ import { createTransport } from 'nodemailer';
 import { RedisService } from './redis.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { promisify } from 'util';
+import { User } from './auth.schema';
+import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
+
 @Injectable()
 export class VerificationCodeService {
   private transporter;
   
-  constructor(private readonly redisService: RedisService) {
+  constructor(
+    private readonly redisService: RedisService,
+    @InjectModel(User.name) private readonly userModel: Model<User>
+    ) {
     // 连接邮箱
     this.transporter = createTransport({
         host: 'smtp.163.com',
@@ -21,7 +28,7 @@ export class VerificationCodeService {
     });
   }
 
-  async generateVerificationCode(toEmail: string): Promise<string> {
+  async generateVerificationCode(toEmail: string): Promise<object> {
     // 生成验证码的逻辑，可以使用随机数生成库生成随机验证码
     const min = 100000;
     const max = 999999;
@@ -31,15 +38,36 @@ export class VerificationCodeService {
         lastRegistrationRequest: Date.now()
     }
     
+    // 该邮箱是否已被注册
+    const existingUser = await this.userModel.find({ "email":toEmail });
+    if (existingUser.length !== 0) {
+      return {
+        success: false,
+        data: {
+          message: "该邮箱已注册！"
+        }
+      }
+      // throw new Error('该邮箱已被注册');
+    }
     // 发送验证码到用户邮箱
     try{
         await this.sendVerificationEmail(toEmail, "主题：验证码", verificationCode);
         await this.redisService.set(toEmail, JSON.stringify(verificationData))
     }catch(error) {
-        return '验证码发送失败，请重新发送';
+        return {
+            success: false,
+            data: {
+              message: "验证码发送失败，请重新发送"
+            }
+        }
     }
 
-    return '验证码已发送，请查收邮件。';
+    return {
+        success: true,
+        data: {
+          message: "验证码已发送到该邮箱，请查收"
+        }
+    }
   }
 
   

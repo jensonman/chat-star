@@ -18,23 +18,56 @@ const auth_schema_1 = require("./auth.schema");
 const mongoose_1 = require("mongoose");
 const mongoose_2 = require("@nestjs/mongoose");
 const jwt_1 = require("@nestjs/jwt");
+const redis_service_1 = require("./redis.service");
 const bcryptjs = require("bcryptjs");
+const verification_code_service_1 = require("./verification-code.service");
 let AuthService = exports.AuthService = class AuthService {
-    constructor(jwtService, userModel) {
+    constructor(jwtService, redisService, verificationCodeService, userModel) {
         this.jwtService = jwtService;
+        this.redisService = redisService;
+        this.verificationCodeService = verificationCodeService;
         this.userModel = userModel;
     }
     async register(createUserDto) {
-        const { email, password } = createUserDto;
+        const { email, password, code } = createUserDto;
         const existingUser = await this.userModel.findOne({ email });
         if (existingUser) {
-            throw new Error('该邮箱已被注册');
+            return {
+                success: false,
+                data: {
+                    message: "该邮箱已注册！"
+                }
+            };
+        }
+        if (code) {
+            let getCode = await this.redisService.get(email);
+            if (code !== JSON.parse(getCode).verificationCode) {
+                return {
+                    success: false,
+                    data: {
+                        message: "请输入正确的验证码！"
+                    }
+                };
+            }
+        }
+        else {
+            return {
+                success: false,
+                data: {
+                    message: "请输入正确的验证码！"
+                }
+            };
         }
         const saltRounds = 10;
         const hashedPassword = await bcryptjs.hashSync(password, saltRounds);
         const newUser = new this.userModel({ email, password: hashedPassword });
         await newUser.save();
-        return newUser;
+        return {
+            data: {
+                message: "message: 注册成功"
+            },
+            success: true
+        };
     }
     async login(loginDto) {
         const { email, password } = loginDto;
@@ -66,8 +99,10 @@ let AuthService = exports.AuthService = class AuthService {
 };
 exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
-    __param(1, (0, mongoose_2.InjectModel)(auth_schema_1.User.name)),
+    __param(3, (0, mongoose_2.InjectModel)(auth_schema_1.User.name)),
     __metadata("design:paramtypes", [jwt_1.JwtService,
+        redis_service_1.RedisService,
+        verification_code_service_1.VerificationCodeService,
         mongoose_1.Model])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map
