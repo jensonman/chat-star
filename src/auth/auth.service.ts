@@ -4,11 +4,13 @@ import { LoginDto } from './dto/login-user.dto';
 import { User } from './auth.schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
+import { JwtService } from '@nestjs/jwt';
 // import { MailService } from './mail.service';
 import * as bcryptjs from 'bcryptjs'
 @Injectable()
 export class AuthService {
     constructor(
+      private jwtService: JwtService,
       @InjectModel(User.name) private readonly userModel: Model<User>,
     ){}
     async register(createUserDto: CreateUserDto) {
@@ -56,11 +58,9 @@ export class AuthService {
         Object.assign(res, {
           code: 200,
           success: true,
-          data: {
-            user
-          }
+          data: {}
         })
-        return res
+        return {...res,access_token: await this.jwtService.signAsync({email})}
         // return {res, token:this.jwtService.sign(email)};
     }
 

@@ -26,13 +26,22 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { LoginDto } from './dto/login-user.dto';
 import { User } from './auth.schema';
 import { Model } from 'mongoose';
+import { JwtService } from '@nestjs/jwt';
 export declare class AuthService {
+    private jwtService;
     private readonly userModel;
-    constructor(userModel: Model<User>);
+    constructor(jwtService: JwtService, userModel: Model<User>);
     register(createUserDto: CreateUserDto): Promise<User & {
         _id: import("mongoose").Types.ObjectId;
     }>;
     login(loginDto: LoginDto): Promise<{
+        code: number;
+        success: boolean;
+        data: {
+            message: string;
+        };
+    } | {
+        access_token: string;
         code: number;
         success: boolean;
         data: {

@@ -17,9 +17,11 @@ const common_1 = require("@nestjs/common");
 const auth_schema_1 = require("./auth.schema");
 const mongoose_1 = require("mongoose");
 const mongoose_2 = require("@nestjs/mongoose");
+const jwt_1 = require("@nestjs/jwt");
 const bcryptjs = require("bcryptjs");
 let AuthService = exports.AuthService = class AuthService {
-    constructor(userModel) {
+    constructor(jwtService, userModel) {
+        this.jwtService = jwtService;
         this.userModel = userModel;
     }
     async register(createUserDto) {
@@ -57,16 +59,15 @@ let AuthService = exports.AuthService = class AuthService {
         Object.assign(res, {
             code: 200,
             success: true,
-            data: {
-                user
-            }
+            data: {}
         });
-        return res;
+        return { ...res, access_token: await this.jwtService.signAsync({ email }) };
     }
 };
 exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
-    __param(0, (0, mongoose_2.InjectModel)(auth_schema_1.User.name)),
-    __metadata("design:paramtypes", [mongoose_1.Model])
+    __param(1, (0, mongoose_2.InjectModel)(auth_schema_1.User.name)),
+    __metadata("design:paramtypes", [jwt_1.JwtService,
+        mongoose_1.Model])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

@@ -6,10 +6,19 @@ import { VerificationCodeService } from './verification-code.service';
 import { RedisService } from './redis.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import {User, UserSchema} from './auth.schema'
-// require('dotenv').config();
+import { JwtModule } from '@nestjs/jwt';
+require('dotenv').config();
 
 @Module({
-  imports: [MongooseModule.forFeature([{name: User.name, schema: UserSchema }])],
+  imports: [
+    MongooseModule.forFeature([{name: User.name, schema: UserSchema }]),
+    JwtModule.register({
+      global: true,
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: '1h' },
+    }),
+  ],
+
   controllers: [AuthController],
   providers: [RedisService, AuthService, MailService, VerificationCodeService]
 })

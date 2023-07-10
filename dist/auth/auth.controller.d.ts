@@ -41,5 +41,12 @@ export declare class AuthController {
         data: {
             message: string;
         };
+    } | {
+        access_token: string;
+        code: number;
+        success: boolean;
+        data: {
+            message: string;
+        };
     }>;
 }
