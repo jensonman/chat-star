@@ -3,7 +3,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { MailService } from './mail.service';
 import { VerificationCodeService } from './verification-code.service';
-import { RedisService } from './redis.service';
+// import { RedisService } from './redis.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import {User, UserSchema} from './auth.schema'
 import { JwtModule } from '@nestjs/jwt';
@@ -21,7 +21,7 @@ require('dotenv').config();
   ],
 
   controllers: [AuthController],
-  providers: [RedisService, AuthService, MailService, VerificationCodeService, CacheService]
+  providers: [ AuthService, MailService, VerificationCodeService, CacheService]
 })
 export class AuthModule {}
 

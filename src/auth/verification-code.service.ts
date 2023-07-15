@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 // import { MailService } from './mail.service';
 import { createTransport } from 'nodemailer';
-import { RedisService } from './redis.service';
+// import { RedisService } from './redis.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { promisify } from 'util';
 import { User } from './auth.schema';

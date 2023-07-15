@@ -18,13 +18,11 @@ const auth_schema_1 = require("./auth.schema");
 const mongoose_1 = require("mongoose");
 const mongoose_2 = require("@nestjs/mongoose");
 const jwt_1 = require("@nestjs/jwt");
-const redis_service_1 = require("./redis.service");
 const bcryptjs = require("bcryptjs");
 const verification_code_service_1 = require("./verification-code.service");
 let AuthService = exports.AuthService = class AuthService {
-    constructor(jwtService, redisService, verificationCodeService, userModel) {
+    constructor(jwtService, verificationCodeService, userModel) {
         this.jwtService = jwtService;
-        this.redisService = redisService;
         this.verificationCodeService = verificationCodeService;
         this.userModel = userModel;
     }
@@ -99,9 +97,8 @@ let AuthService = exports.AuthService = class AuthService {
 };
 exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
-    __param(3, (0, mongoose_2.InjectModel)(auth_schema_1.User.name)),
+    __param(2, (0, mongoose_2.InjectModel)(auth_schema_1.User.name)),
     __metadata("design:paramtypes", [jwt_1.JwtService,
-        redis_service_1.RedisService,
         verification_code_service_1.VerificationCodeService,
         mongoose_1.Model])
 ], AuthService);

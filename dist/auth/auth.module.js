@@ -12,7 +12,6 @@ const auth_controller_1 = require("./auth.controller");
 const auth_service_1 = require("./auth.service");
 const mail_service_1 = require("./mail.service");
 const verification_code_service_1 = require("./verification-code.service");
-const redis_service_1 = require("./redis.service");
 const mongoose_1 = require("@nestjs/mongoose");
 const auth_schema_1 = require("./auth.schema");
 const jwt_1 = require("@nestjs/jwt");
@@ -31,7 +30,7 @@ exports.AuthModule = AuthModule = __decorate([
             }),
         ],
         controllers: [auth_controller_1.AuthController],
-        providers: [redis_service_1.RedisService, auth_service_1.AuthService, mail_service_1.MailService, verification_code_service_1.VerificationCodeService, cache_service_1.CacheService]
+        providers: [auth_service_1.AuthService, mail_service_1.MailService, verification_code_service_1.VerificationCodeService, cache_service_1.CacheService]
     })
 ], AuthModule);
 //# sourceMappingURL=auth.module.js.map

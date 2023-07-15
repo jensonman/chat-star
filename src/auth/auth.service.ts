@@ -5,7 +5,7 @@ import { User } from './auth.schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { JwtService } from '@nestjs/jwt';
-import { RedisService } from './redis.service';
+// import { RedisService } from './redis.service';
 import { promisify } from 'util';
 // import { MailService } from './mail.service';
 import * as bcryptjs from 'bcryptjs'
@@ -15,7 +15,7 @@ import { VerificationCodeService } from './verification-code.service';
 export class AuthService {
     constructor(
       private jwtService: JwtService,
-      private readonly redisService: RedisService,
+      // private readonly redisService: RedisService,
       private readonly verificationCodeService: VerificationCodeService, 
       @InjectModel(User.name) private readonly userModel: Model<User>,
     ){}
