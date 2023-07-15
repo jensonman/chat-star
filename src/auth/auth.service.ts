@@ -36,8 +36,10 @@ export class AuthService {
         }
         // 检查验证码
         if(code) {
-          let getCode = await this.redisService.get(email)
-          if (code !== JSON.parse(getCode).verificationCode) {
+          // let getCode = await this.redisService.get(email)
+          let resCode = this.verificationCodeService.getData(email)
+
+          if (code !== resCode) {
             return {
               success: false,
               data: {

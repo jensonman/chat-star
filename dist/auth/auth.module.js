@@ -16,6 +16,7 @@ const redis_service_1 = require("./redis.service");
 const mongoose_1 = require("@nestjs/mongoose");
 const auth_schema_1 = require("./auth.schema");
 const jwt_1 = require("@nestjs/jwt");
+const cache_service_1 = require("./cache.service");
 require('dotenv').config();
 let AuthModule = exports.AuthModule = class AuthModule {
 };
@@ -30,7 +31,7 @@ exports.AuthModule = AuthModule = __decorate([
             }),
         ],
         controllers: [auth_controller_1.AuthController],
-        providers: [redis_service_1.RedisService, auth_service_1.AuthService, mail_service_1.MailService, verification_code_service_1.VerificationCodeService]
+        providers: [redis_service_1.RedisService, auth_service_1.AuthService, mail_service_1.MailService, verification_code_service_1.VerificationCodeService, cache_service_1.CacheService]
     })
 ], AuthModule);
 //# sourceMappingURL=auth.module.js.map

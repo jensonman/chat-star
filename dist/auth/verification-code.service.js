@@ -15,13 +15,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.VerificationCodeService = void 0;
 const common_1 = require("@nestjs/common");
 const nodemailer_1 = require("nodemailer");
-const redis_service_1 = require("./redis.service");
 const auth_schema_1 = require("./auth.schema");
 const mongoose_1 = require("mongoose");
 const mongoose_2 = require("@nestjs/mongoose");
+const cache_service_1 = require("./cache.service");
+const schedule_1 = require("@nestjs/schedule");
 let VerificationCodeService = exports.VerificationCodeService = class VerificationCodeService {
-    constructor(redisService, userModel) {
-        this.redisService = redisService;
+    constructor(cacheService, userModel) {
+        this.cacheService = cacheService;
         this.userModel = userModel;
         this.transporter = (0, nodemailer_1.createTransport)({
             host: 'smtp.163.com',
@@ -52,9 +53,11 @@ let VerificationCodeService = exports.VerificationCodeService = class Verificati
             };
         }
         try {
-            await this.redisService.set(toEmail, JSON.stringify(verificationData));
-            this.redisService.client.expire(toEmail, codeExpireTime);
-            await this.sendVerificationEmail(toEmail, "主题：验证码", verificationCode);
+            this.saveData(toEmail, verificationCode, codeExpireTime);
+            let getData = this.getData(toEmail);
+            if (getData) {
+                await this.sendVerificationEmail(toEmail, "主题：验证码", verificationCode);
+            }
         }
         catch (error) {
             return {
@@ -70,6 +73,15 @@ let VerificationCodeService = exports.VerificationCodeService = class Verificati
                 message: "验证码已发送到该邮箱，请查收"
             }
         };
+    }
+    saveData(key, value, expiration) {
+        this.cacheService.set(key, value, expiration);
+    }
+    getData(key) {
+        return this.cacheService.get(key);
+    }
+    cleanExpiredData() {
+        this.cacheService.cleanExpiredData();
     }
     async sendVerificationEmail(to, subject, verificationCode) {
         this.transporter.verify(function (error, success) {
@@ -101,30 +113,27 @@ let VerificationCodeService = exports.VerificationCodeService = class Verificati
     }
     async verified(options) {
         let message;
-        await this.redisService.get(options.email).then((res) => {
-            let data = JSON.parse(res);
-            if (data.lastRegistrationRequest) {
-                const timeDiff = Date.now() - data.lastRegistrationRequest;
-                const registrationInterval = 60 * 1000;
-                if (timeDiff < registrationInterval) {
-                    throw new Error('Registration requests are too frequent. Please try again later.');
-                }
-            }
-            if (data && data.verificationCode === options.code) {
-                message = "验证通过";
-            }
-        }).catch((error) => {
-            console.log(error);
+        let res = this.getData(options.email);
+        if (res === options.code) {
+            message = "验证通过";
+        }
+        else {
             message = "验证不通过";
-        });
+        }
         console.log(message);
         return message;
     }
 };
+__decorate([
+    (0, schedule_1.Cron)('0 * * * * *'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], VerificationCodeService.prototype, "cleanExpiredData", null);
 exports.VerificationCodeService = VerificationCodeService = __decorate([
     (0, common_1.Injectable)(),
     __param(1, (0, mongoose_2.InjectModel)(auth_schema_1.User.name)),
-    __metadata("design:paramtypes", [redis_service_1.RedisService,
+    __metadata("design:paramtypes", [cache_service_1.CacheService,
         mongoose_1.Model])
 ], VerificationCodeService);
 //# sourceMappingURL=verification-code.service.js.map

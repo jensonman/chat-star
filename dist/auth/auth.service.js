@@ -40,8 +40,8 @@ let AuthService = exports.AuthService = class AuthService {
             };
         }
         if (code) {
-            let getCode = await this.redisService.get(email);
-            if (code !== JSON.parse(getCode).verificationCode) {
+            let resCode = this.verificationCodeService.getData(email);
+            if (code !== resCode) {
                 return {
                     success: false,
                     data: {

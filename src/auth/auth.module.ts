@@ -7,6 +7,7 @@ import { RedisService } from './redis.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import {User, UserSchema} from './auth.schema'
 import { JwtModule } from '@nestjs/jwt';
+import { CacheService } from './cache.service';
 require('dotenv').config();
 
 @Module({
@@ -20,7 +21,7 @@ require('dotenv').config();
   ],
 
   controllers: [AuthController],
-  providers: [RedisService, AuthService, MailService, VerificationCodeService]
+  providers: [RedisService, AuthService, MailService, VerificationCodeService, CacheService]
 })
 export class AuthModule {}
 

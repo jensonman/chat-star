@@ -7,13 +7,15 @@ import { promisify } from 'util';
 import { User } from './auth.schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-
+import { CacheService } from './cache.service';
+import { Cron } from '@nestjs/schedule';
 @Injectable()
 export class VerificationCodeService {
   private transporter;
   
   constructor(
-    private readonly redisService: RedisService,
+    // private readonly redisService: RedisService,
+    private readonly cacheService: CacheService,
     @InjectModel(User.name) private readonly userModel: Model<User>
     ) {
     // 连接邮箱
@@ -53,9 +55,12 @@ export class VerificationCodeService {
     }
     // 发送验证码到用户邮箱
     try{
-      await this.redisService.set(toEmail, JSON.stringify(verificationData))
-      this.redisService.client.expire(toEmail, codeExpireTime)
-      await this.sendVerificationEmail(toEmail, "主题：验证码", verificationCode);
+      this.saveData(toEmail, verificationCode, codeExpireTime)
+      // 是否设置成功
+      let getData = this.getData(toEmail)
+      if(getData){
+        await this.sendVerificationEmail(toEmail, "主题：验证码", verificationCode);
+      }
         
     }catch(error) {
         return {
@@ -73,6 +78,65 @@ export class VerificationCodeService {
         }
     }
   }
+  // 内存缓存
+  saveData(key: string, value: any, expiration: number) {
+    this.cacheService.set(key, value, expiration);
+  }
+  // 获取内存缓存数据
+  getData(key: string) {
+    return this.cacheService.get(key);
+  }
+  // 定时清理缓存
+  @Cron('0 * * * * *') // 每分钟的第0秒执行
+  cleanExpiredData() {
+    this.cacheService.cleanExpiredData();
+  }
+// 验证码使用redis的方法保存，但是由于云服务内存实在不够，只能改用mongodb
+  // async generateVerificationCode(toEmail: string): Promise<object> {
+  //   // 生成验证码的逻辑，可以使用随机数生成库生成随机验证码
+  //   const min = 100000;
+  //   const max = 999999;
+  //   const verificationCode = String(Math.floor(Math.random() * (max - min + 1)) + min);
+  //   const verificationData = {
+  //       verificationCode,
+  //       lastRegistrationRequest: Date.now()
+  //   }
+  //   // 验证码过期时间
+  //   const codeExpireTime = 60
+    
+  //   // 该邮箱是否已被注册
+  //   const existingUser = await this.userModel.find({ "email":toEmail });
+  //   if (existingUser.length !== 0) {
+  //     return {
+  //       success: false,
+  //       data: {
+  //         message: "该邮箱已注册！"
+  //       }
+  //     }
+  //     // throw new Error('该邮箱已被注册');
+  //   }
+  //   // 发送验证码到用户邮箱
+  //   try{
+  //     await this.redisService.set(toEmail, JSON.stringify(verificationData))
+  //     this.redisService.client.expire(toEmail, codeExpireTime)
+  //     await this.sendVerificationEmail(toEmail, "主题：验证码", verificationCode);
+        
+  //   }catch(error) {
+  //       return {
+  //           success: false,
+  //           data: {
+  //             message: "验证码发送失败，请重新发送"
+  //           }
+  //       }
+  //   }
+
+  //   return {
+  //       success: true,
+  //       data: {
+  //         message: "验证码已发送到该邮箱，请查收"
+  //       }
+  //   }
+  // }
 
   
   async sendVerificationEmail(to: string, subject: string, verificationCode: string): Promise<Array<string>> {
@@ -105,27 +169,38 @@ export class VerificationCodeService {
     return mailRes.accepted
   }
 
-  // 验证
   async verified(options: CreateUserDto){
     let message 
-    await this.redisService.get(options.email).then((res: string) => {
-        let data: any = JSON.parse(res) 
-        if ( data.lastRegistrationRequest ) {
-            const timeDiff = Date.now() - data.lastRegistrationRequest
-            // 设置限制条件，例如每次注册请求之间至少需要间隔1分钟
-            const registrationInterval = 60 * 1000; // 1分钟
-            if (timeDiff < registrationInterval) {
-                throw new Error('Registration requests are too frequent. Please try again later.');
-            }
-        }
-        if (data && data.verificationCode === options.code) {
-            message = "验证通过"
-        }
-    }).catch((error: Error) => {
-        console.log(error)
-        message = "验证不通过"
-    })
+    let res = this.getData(options.email)
+    if (res === options.code) {
+        message = "验证通过"
+    }else {
+      message = "验证不通过"
+    }
     console.log(message)
     return message
   }
+  // 验证 ==== redis逻辑
+  // async verified(options: CreateUserDto){
+  //   let message 
+  //   await this.redisService.get(options.email).then((res: string) => {
+  //       let data: any = JSON.parse(res) 
+  //       if ( data.lastRegistrationRequest ) {
+  //           const timeDiff = Date.now() - data.lastRegistrationRequest
+  //           // 设置限制条件，例如每次注册请求之间至少需要间隔1分钟
+  //           const registrationInterval = 60 * 1000; // 1分钟
+  //           if (timeDiff < registrationInterval) {
+  //               throw new Error('Registration requests are too frequent. Please try again later.');
+  //           }
+  //       }
+  //       if (data && data.verificationCode === options.code) {
+  //           message = "验证通过"
+  //       }
+  //   }).catch((error: Error) => {
+  //       console.log(error)
+  //       message = "验证不通过"
+  //   })
+  //   console.log(message)
+  //   return message
+  // }
 }
