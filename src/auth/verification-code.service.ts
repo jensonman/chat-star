@@ -37,6 +37,8 @@ export class VerificationCodeService {
         verificationCode,
         lastRegistrationRequest: Date.now()
     }
+    // 验证码过期时间
+    const codeExpireTime = 60
     
     // 该邮箱是否已被注册
     const existingUser = await this.userModel.find({ "email":toEmail });
@@ -51,8 +53,10 @@ export class VerificationCodeService {
     }
     // 发送验证码到用户邮箱
     try{
-        await this.sendVerificationEmail(toEmail, "主题：验证码", verificationCode);
-        await this.redisService.set(toEmail, JSON.stringify(verificationData))
+      await this.redisService.set(toEmail, JSON.stringify(verificationData))
+      this.redisService.client.expire(toEmail, codeExpireTime)
+      await this.sendVerificationEmail(toEmail, "主题：验证码", verificationCode);
+        
     }catch(error) {
         return {
             success: false,
@@ -71,7 +75,7 @@ export class VerificationCodeService {
   }
 
   
-  async sendVerificationEmail(to: string, subject: string, verificationCode: string): Promise<void> {
+  async sendVerificationEmail(to: string, subject: string, verificationCode: string): Promise<Array<string>> {
     // 邮件服务器准备
     this.transporter.verify(function (error, success) {
         if (error) {
@@ -81,7 +85,7 @@ export class VerificationCodeService {
         }
     })
     // console.log("---this.transporter:", this.transporter)
-    await this.transporter.sendMail({
+    let mailRes = await this.transporter.sendMail({
       from: 'wecode2old@163.com',
       to,
       subject,
@@ -98,6 +102,7 @@ export class VerificationCodeService {
 
         </body>`,
     });
+    return mailRes.accepted
   }
 
   // 验证

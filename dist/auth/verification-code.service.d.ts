@@ -8,6 +8,6 @@ export declare class VerificationCodeService {
     private transporter;
     constructor(redisService: RedisService, userModel: Model<User>);
     generateVerificationCode(toEmail: string): Promise<object>;
-    sendVerificationEmail(to: string, subject: string, verificationCode: string): Promise<void>;
+    sendVerificationEmail(to: string, subject: string, verificationCode: string): Promise<Array<string>>;
     verified(options: CreateUserDto): Promise<any>;
 }

@@ -21,7 +21,6 @@ let AppController = exports.AppController = class AppController {
         this.appService = appService;
     }
     getProfile(req) {
-        console.log(req);
         return { authentication: true };
     }
 };

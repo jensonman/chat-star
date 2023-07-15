@@ -9,7 +9,6 @@ export class AppController {
   @UseGuards(AuthGuard)
   @Post('index')
   getProfile(@Request() req) {
-    console.log(req)
     return {authentication:true};
   }
 }

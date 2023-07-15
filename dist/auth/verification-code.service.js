@@ -41,6 +41,7 @@ let VerificationCodeService = exports.VerificationCodeService = class Verificati
             verificationCode,
             lastRegistrationRequest: Date.now()
         };
+        const codeExpireTime = 60;
         const existingUser = await this.userModel.find({ "email": toEmail });
         if (existingUser.length !== 0) {
             return {
@@ -51,8 +52,9 @@ let VerificationCodeService = exports.VerificationCodeService = class Verificati
             };
         }
         try {
-            await this.sendVerificationEmail(toEmail, "主题：验证码", verificationCode);
             await this.redisService.set(toEmail, JSON.stringify(verificationData));
+            this.redisService.client.expire(toEmail, codeExpireTime);
+            await this.sendVerificationEmail(toEmail, "主题：验证码", verificationCode);
         }
         catch (error) {
             return {
@@ -78,7 +80,7 @@ let VerificationCodeService = exports.VerificationCodeService = class Verificati
                 console.log('email is ready');
             }
         });
-        await this.transporter.sendMail({
+        let mailRes = await this.transporter.sendMail({
             from: 'wecode2old@163.com',
             to,
             subject,
@@ -95,6 +97,7 @@ let VerificationCodeService = exports.VerificationCodeService = class Verificati
 
         </body>`,
         });
+        return mailRes.accepted;
     }
     async verified(options) {
         let message;
