@@ -12,6 +12,7 @@ const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
 const mongoose_1 = require("@nestjs/mongoose");
 const auth_module_1 = require("./auth/auth.module");
+const openai_module_1 = require("./openai/openai.module");
 require('dotenv').config();
 let AppModule = exports.AppModule = class AppModule {
 };
@@ -20,6 +21,7 @@ exports.AppModule = AppModule = __decorate([
         imports: [
             mongoose_1.MongooseModule.forRoot(`mongodb://${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_DATABASE}`),
             auth_module_1.AuthModule,
+            openai_module_1.OpenAiModule
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
