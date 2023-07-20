@@ -1,22 +1,24 @@
-import { Controller, Post, Res, Sse } from '@nestjs/common';
-import { Response } from 'express';
+import { Controller, Get,  Post, Req,  Res, Sse } from '@nestjs/common';
+import { Response, Request } from 'express';
 import { OpenAIService } from './openai.service';
 @Controller('openai')
 export class OpenAIController {
   constructor(private readonly openaiService: OpenAIService) {}
 
   @Post('generate')
-  async generateText(@Res() res: Response) {
-    res.setHeader('Content-Type', 'text/html');
-    res.setHeader('Transfer-Encoding', 'chunked');
+  async generateText(@Req() req:Request, @Res() res: Response) {
 
-    const prompt = 'hello...';
-    this.openaiService.generateText(prompt);
+
+    const prompt = req.body.promptMessage.value;
+    this.openaiService.setPostMessage(prompt)
     // for await (const chunk of generator) {
     //     console.log("chunk:---", chunk)
     //   res.write(`data: ${chunk}\n\n`);
     // }
-
-    res.end();
+  }
+  @Get('generate/text')
+  async text(@Res() res: Response){
+    const prompt = this.openaiService.getPostMessage()
+    this.openaiService.generateText(res,prompt);
   }
 }
